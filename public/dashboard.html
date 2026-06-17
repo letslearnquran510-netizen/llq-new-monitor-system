@@ -212,15 +212,18 @@ const {
 } = React;
 
 // Grid frames: small + slow (cheap). Focus frame: bigger + faster.
-const GRID = {
-  fps: 0.5,
-  quality: 12,
-  width: 400
+// Frame quality scales with tile size: fewer tiles on screen = bigger tiles = sharper frames.
+// (-q:v is ffmpeg JPEG quality where LOWER = better; width is the capture width in px.)
+const QUALITY = {
+  "1x1": { fps: 1.5, quality: 4, width: 1600 },
+  "4x4": { fps: 0.7, quality: 8, width: 560 },
+  "8x8": { fps: 0.5, quality: 11, width: 360 }
 };
+// Click-to-enlarge focus modal: maximum clarity.
 const FOCUS = {
   fps: 2,
-  quality: 6,
-  width: 1100
+  quality: 4,
+  width: 1680
 };
 function api(base, token, pathStr, opts = {}) {
   return fetch(base + pathStr, {
@@ -466,7 +469,7 @@ function App() {
               },
               body: JSON.stringify({
                 machineIds: ids,
-                ...GRID
+                ...(QUALITY[density] || QUALITY["4x4"])
               })
             });
           }
@@ -479,7 +482,7 @@ function App() {
       alive = false;
       clearInterval(t);
     };
-  }, [conn, machines, focusId]);
+  }, [conn, machines, focusId, density]);
 
   // Frame refresh ticks.
   useEffect(() => {
